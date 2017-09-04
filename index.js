@@ -21,26 +21,20 @@ app.use(responseHeader(CONFIG.cors));
 app.use(bparser.urlencoded({extended: true}));
 app.use(bparser.json());
 
-
-app.post('/test', function(req, res){
-    var member = req.body.member_yn;
-    var hp = req.body.call_number;
-    var time = new Date();
-    var msg = member + hp + '    ' + time;
-    io.emit('chat message', msg);
-});
+//TODO 미들웨어로 빼야 하나 말아야 하나
+var callbelldata = (req, res, next) => {
+    var sn = req.body.sn;
+    var branchNum2 = req.body.branch_number2;
+    var callbell = [branchNum2 , sn];
+    io.emit('callbell', callbell );
+    next();
+}
 
 app.post('/first' , arsInsert);
 app.post('/menu' , arsMenu);
-app.post('/callbell' , arsCallUpdate);
+app.post('/callbell' , callbelldata , arsCallUpdate);
 app.post('/consultstart' , arsCallStart);
 app.post('/consultend' , arsCallEnd);
-
-io.on('connection', function(socket){
-  socket.on('chat message', function(msg){
-    io.emit('chat message', msg);
-  });
-});
 
 // server start
 http.listen(5500, function(){
